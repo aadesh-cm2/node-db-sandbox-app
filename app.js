@@ -2,25 +2,41 @@ const express = require("express");
 require("dotenv").config();
 const path = require("path");
 const cors = require("cors");
+const basicAuth = require('express-basic-auth')
 const bodyParser = require('body-parser');
-const firebase = require('firebase')
+const mongoose = require("mongoose");
 
-const firebaseConfig = {
-    apiKey: "AIzaSyD8SZwKfKbM0Z-DqDnjldKIoCLrC_Iq9Yw",
-    authDomain: "node-db-sandbox.firebaseapp.com",
-    databaseURL: "https://node-db-sandbox-default-rtdb.firebaseio.com",
-    projectId: "node-db-sandbox",
-    storageBucket: "node-db-sandbox.appspot.com",
-    messagingSenderId: "187698268139",
-    appId: "1:187698268139:web:4fa496cf390fa2bb193bae",
-    measurementId: "G-6ENL68C70J"
-  };
+// routes
+const userRoute = require("./api/routes/assets");
 
-  firebase.initializeApp(firebaseConfig)
+// users to be authenticated to use the API
+const users = require('./users.json')
 
-  let database = firebase.database()
+const rootRoute = "/api/v1";
 
 const app = express();
+
+//MongoDB Atlas connecting string
+const mongoUrl = `mongodb://${
+    process.env.MONGO_USER
+}:${
+    process.env.MONGO_PASS
+}@cluster0-shard-00-00.nmqiy.mongodb.net:27017,cluster0-shard-00-01.nmqiy.mongodb.net:27017,cluster0-shard-00-02.nmqiy.mongodb.net:27017/${
+    process.env.MONGO_DB
+}?ssl=true&replicaSet=atlas-8ot9f2-shard-0&authSource=admin&retryWrites=true&w=majority`;
+
+
+//Connecting to MongoDB
+try {
+    mongoose.connect(mongoUrl, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+    });
+    console.log("Database connected...");
+} catch (error) {
+    console.error(error);
+}
 
 // setting limit for body parser. You can change it to whatever required
 app.use(bodyParser.json({limit: '5mb'}));
@@ -29,28 +45,14 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
-app.use('/', (req, res) => {
-    const obj = {
-        name: "Aadesh",
-        lastname: "Shah"
-    }
-    // database.ref("customPath").set(obj, function(error) {
-    //     if (error) {
-    //       // The write failed...
-    //       console.log("Failed with error: " + error)
-    //     } else {
-    //       // The write was successful...
-    //       console.log("success")
-    //     }
-    // })
-        database.ref('customPath').once('value')
-    .then(function(snapshot) {
-        console.log( snapshot.val() )
-    })
-    .catch(err => {
-        console.error(err);
-    })
-    res.send("It workes!")
-})
+app.use(basicAuth({users}))
+
+// app.use('/', async (req, res) => {
+//     // const data = await db.collection('assets').get();
+//     // console.log(data);
+//     res.send("It workes!")
+// })
+
+app.use(`${rootRoute}/assets`, userRoute);
 
 module.exports = app;
