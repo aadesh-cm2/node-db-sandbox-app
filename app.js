@@ -35,7 +35,7 @@ try {
     });
     console.log("Database connected...");
 } catch (error) {
-    console.error(error);
+    console.error("DB connection error::",error);
 }
 
 // setting limit for body parser. You can change it to whatever required

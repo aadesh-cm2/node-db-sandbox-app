@@ -1,9 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
-const { resolveMetaData } = require("../../utils/assets");
+const { resolveMetaData, resolveImageSize } = require("../../utils/assets");
 
 const {saveImage} = require("../../utils/firebase-functions");
+const { saveAsset } = require("../controllers/assets");
 
 const assets = require("../models/assets");
 
@@ -14,40 +15,76 @@ const upload = multer({storage: multer.memoryStorage()});
 
 router.post('/', upload.single("file"), async (req, res) => {
 
-    // if (!req.body || !req.body.data.assetName || !req.body.data.imageName || !req.body.data.make || !req.body.data.model )
-    //     return res.status(500).json({message: "Missing body data", success: false});
-    console.log(req.body);
+    if (!req.body || !req.body.assetNameEN || !req.body.assetNameFR || !req.body.make || !req.body.model )
+        return res.status(500).json({message: "Missing Asset data", success: false});
+    
+    const newAsset = req.body;
+
+    console.log(newAsset);
     console.log(req.file);
+
     if (!req.file) 
         return res.status(400).send("Missing image file");
     try{
+        if(newAsset.primaryAsset == 'true'){
+            assets.findOne({
+                make : newAsset.make,
+                model : newAsset.model,
+                primary : true,
+                "metaData.modelYear" : newAsset.modelYear
+            })
+            .then(async existingPrimaryAsset => {
+                if(existingPrimaryAsset){
+                    console.log("Primary asset exists for this vehicle")
+                    res.status(400).json({
+                        message : "Primary asset exists for this vehicle",
+                        success : false
+                    })
+                }
+                else{
+                    saveAsset(newAsset, req.file)
+                    .then(asset => {
+                        res.status(200).json({
+                            message : 'Asset Added!',
+                            asset,
+                            success : true
+                        })
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            message : 'Something went wrong',
+                            success : false
+                        })
+                    })
+                }
+            })
+            .catch(err => {
+                console.error(err)
+                res.status(500).json({
+                    message: "Something went wrong",
+                    success: false
+                })
+            })
 
-        //console.log(req.file);
-
-        //const imageURL = await saveImage(req.file)
-
-        //resolveMetaData('Buick',req.file)
+        }
+        else{
+            saveAsset(newAsset, req.file)
+            .then(asset => {
+                res.status(200).json({
+                    message : 'Asset Added!',
+                    asset,
+                    success : true
+                })
+            })
+            .catch(err => {
+                console.log(err)
+                res.status(500).json({
+                    message : 'Something went wrong',
+                    success : false
+                })
+            })
+        }
         
-
-        // const asset = new assets({
-        //     _id: new mongoose.Types.ObjectId(),
-        //     imageURL,
-        //     assetName: req.body.data.assetName,
-        //     make: req.body.make,
-        //     model: req.body.model,
-        //     desc: req.body.desc ? req.body.desc : '',
-        //     status: true,
-        //     metaData: {
-        //         makeCD
-        //     }
-        // })
-
-        res.status(200).json({
-            //imageURL,
-            message: "Asset added!",
-            success: true
-        })
-
     }
     catch(err){
         console.error(err)
@@ -57,6 +94,22 @@ router.post('/', upload.single("file"), async (req, res) => {
         })
     }
 
+})
+
+router.get('/all', (req, res) => {
+    assets.find().exec().then(result => {
+        res.status(200).json({
+            data : result,
+            success : true
+        })
+    })
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({
+            message : 'Something went wrong',
+            success : false 
+        })
+    })
 })
 
 module.exports = router;
