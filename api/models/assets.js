@@ -1,18 +1,27 @@
 const mongoose = require("mongoose");
 
 const assetName = {
-    EN : String,
-    FR : String
+    assetNameEN : String,
+    assetNameFR : String
+}
+
+const size = {
+    width : Number,
+    height : Number,
+    code : String
 }
 
 const metaData = {
     makeCD : String,
-    modeCD : String,
+    modelCD : String,
     modelYear : String,
-    modelType : String,
-    modelSubType : String,
+    modelTypeEN : String,
+    modelTypeFR : String,
+    modelSubTypeEN : String,
+    modelSubTypeFR : String,
     color : String,
-    expiryDate : String
+    expiryDate : String,
+    size
 }
 
 const assetSchema = mongoose.Schema({
@@ -23,6 +32,7 @@ const assetSchema = mongoose.Schema({
     model : String,
     desc : String,
     status : Boolean,
+    primary : Boolean,
     metaData
 });
 
