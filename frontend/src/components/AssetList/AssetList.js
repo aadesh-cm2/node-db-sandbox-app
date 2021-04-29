@@ -10,15 +10,18 @@ import { makeStyles } from '@material-ui/core/styles';
 function AssetList(newAsset) {
 
     const [state, setState] = React.useState([])
+    const [make, setMake] = useState('')
+
 
     useEffect(() => {
         fetchData();
-
-    }, [newAsset], console.log(state));
+    }, [newAsset], console.log(make));
 
     const fetchData = () => {
         axios.get('http://localhost:5000/api/v1/assets/all', { auth })
-            .then(res => setState(res.data.data))
+            .then(res => {
+                setState(res.data.data)
+            })
 
             .catch(err => {
                 console.log(err);
@@ -48,6 +51,10 @@ function AssetList(newAsset) {
         },
     }));
 
+    const handleChange = (newValue) => {
+        setMake(newValue)
+    };
+
     const classes = useStyles();
 
     return (
@@ -55,22 +62,25 @@ function AssetList(newAsset) {
         < div className={classes.root}>
 
             <AppBar position="static">
-                <Tabs value={0} >
-                    <Tab label="Chevrolet" />
-                    <Tab label="Buick" />
-                    <Tab label="GMC" />
-                    <Tab label="Cadillac" />
+                <Tabs value={0}>
+                    <Tab label="Chevrolet" onClick={() => handleChange('Chevrolet')} />
+                    <Tab label="Buick" onClick={() => handleChange('Buick')} />
+                    <Tab label="GMC" onClick={() => handleChange('GMC')} />
+                    <Tab label="Cadillac" onClick={() => handleChange('Cadillac')} />
                 </Tabs>
             </AppBar>
 
             {state.map((eachData) => {
-
+                if (make === eachData.make) {
+                    console.log(eachData);
+                }
                 return (
+
                     <ButtonBase key={eachData._id} className={classes.root}>
                         <Paper className={classes.paper} >
                             <Grid container spacing={1} >
                                 <Grid item className={classes.image} >
-                                    <img className={classes.img} alt="Vehicle Image" srcSet={`${eachData.imageURL}`} />
+                                    <img className="img-responsive" className={classes.img} alt="Vehicle Image" srcSet={`${eachData.imageURL}`} />
                                 </Grid>
                                 <Grid item xs={12} sm container>
                                     <Grid item xs container direction="column" spacing={2}>
@@ -110,6 +120,7 @@ function AssetList(newAsset) {
                         </Paper>
                     </ButtonBase>
                 )
+
             })}
 
         </div >

@@ -1,11 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import {Divider, Drawer, List, ListItem, ListItemText} from '@material-ui/core';
+import { Divider, Drawer, List, ListItem, ListItemText } from '@material-ui/core';
 
 function TopNav() {
 
@@ -17,8 +17,8 @@ function TopNav() {
                 <IconButton edge="start" color="inherit" aria-label="menu"
                     onClick={
                         () => setSidenav(true)
-                }>
-                    <MenuIcon/>
+                    }>
+                    <MenuIcon />
                 </IconButton>
                 <Typography variant="h6">
                     CM2 Asset Manager
@@ -27,14 +27,17 @@ function TopNav() {
             <Drawer open={sidenav}
                 onClose={
                     () => setSidenav(false)
-            }>
+                }>
                 <List>
                     <ListItem>
                         Vehicles
                     </ListItem>
                     <Divider />
-                    <ListItem>
+                    <ListItem button>
                         Upload Vehicle Assets
+                    </ListItem>
+                    <ListItem button>
+                        Vehicle List
                     </ListItem>
                 </List>
             </Drawer>
