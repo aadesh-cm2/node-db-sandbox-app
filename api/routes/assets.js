@@ -36,7 +36,7 @@ router.post('/', upload.single("file"), async (req, res) => {
             .then(async existingPrimaryAsset => {
                 if(existingPrimaryAsset){
                     console.log("Primary asset exists for this vehicle")
-                    res.status(400).json({
+                    return res.status(400).json({
                         message : "Primary asset exists for this vehicle",
                         success : false
                     })
@@ -51,7 +51,7 @@ router.post('/', upload.single("file"), async (req, res) => {
                         })
                     })
                     .catch(err => {
-                        res.status(500).json({
+                        return res.status(500).json({
                             message : 'Something went wrong',
                             success : false
                         })
@@ -60,7 +60,7 @@ router.post('/', upload.single("file"), async (req, res) => {
             })
             .catch(err => {
                 console.error(err)
-                res.status(500).json({
+                return res.status(500).json({
                     message: "Something went wrong",
                     success: false
                 })
@@ -70,7 +70,7 @@ router.post('/', upload.single("file"), async (req, res) => {
         else{
             saveAsset(newAsset, req.file)
             .then(asset => {
-                res.status(200).json({
+                return res.status(200).json({
                     message : 'Asset Added!',
                     asset,
                     success : true
@@ -78,7 +78,7 @@ router.post('/', upload.single("file"), async (req, res) => {
             })
             .catch(err => {
                 console.log(err)
-                res.status(500).json({
+                return res.status(500).json({
                     message : 'Something went wrong',
                     success : false
                 })
@@ -88,7 +88,7 @@ router.post('/', upload.single("file"), async (req, res) => {
     }
     catch(err){
         console.error(err)
-        res.status(500).json({
+        return res.status(500).json({
             message: "Something went wrong",
             success: false
         })
@@ -96,16 +96,61 @@ router.post('/', upload.single("file"), async (req, res) => {
 
 })
 
+router.post('/multiple', upload.array('files',10), (req, res) => {
+    console.log(req.files)
+
+    if (!req.body || !req.body.assets.length )
+        return res.status(500).json({message: "Missing Asset data", success: false});
+    else if(!req.files.length)
+        return res.status(400).json({
+            message : 'Missing Images',
+            success : false
+        })
+
+    const assets = req.body.assets;
+
+    const uploadedAssets = []
+
+    req.files.map((file, index) => {
+        if(files[index].originalname == assets[index].fileName){
+            saveAsset(assets[index], files[index])
+            .then(asset => {
+                uploadedAssets.push(asset)
+            })
+            .catch(err => {
+                console.error(err)
+                return res.status(500).json({
+                    message: "Something went wrong",
+                    success: false
+                })
+            })
+        }
+    })
+
+    if(uploadedAssets.length)
+        return res.status(200).json({
+            message: "Assets Uploaded!",
+            assets: uploadedAssets,
+            success: true
+        })
+    else
+        return res.status(500).json({
+            message: "Something went wrong",
+            success: false
+        })
+
+})
+
 router.get('/all', (req, res) => {
     assets.find().exec().then(result => {
-        res.status(200).json({
+        return res.status(200).json({
             data : result,
             success : true
         })
     })
     .catch(err => {
         console.error(err);
-        res.status(500).json({
+        return res.status(500).json({
             message : 'Something went wrong',
             success : false 
         })
