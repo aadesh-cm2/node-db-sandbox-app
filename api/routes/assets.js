@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
+var dotify = require('node-dotify');
+
 const { resolveMetaData, resolveImageSize } = require("../../utils/assets");
 
 const {saveImage} = require("../../utils/firebase-functions");
@@ -141,8 +143,16 @@ router.post('/multiple', upload.array('files',10), (req, res) => {
 
 })
 
-router.get('/all', (req, res) => {
-    assets.find().exec().then(result => {
+router.post('/all', (req, res) => {
+
+    const query = req.body;
+
+    console.log("Query:",query);
+
+    console.log(dotify(query));
+
+    assets.find(dotify(query)).exec().then(result => {
+        console.log("Vehicles:::",result.length)
         return res.status(200).json({
             data : result,
             success : true

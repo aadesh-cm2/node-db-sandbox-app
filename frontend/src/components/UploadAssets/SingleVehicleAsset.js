@@ -1,6 +1,9 @@
 import React, {useState} from 'react';
 import axios from 'axios'
 import * as Vibrant from 'node-vibrant'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import {
     Button,
     Grid,
@@ -61,12 +64,12 @@ function SingleVehicleAsset() {
         const form = event.currentTarget;
 
         if (!file) {
-            alert("Upload a file!")
+            toast.error("Upload a file!")
             return null;
         }
 
         if (! form.checkValidity && !modelType && !selectedColor) {
-            alert('Fill out all the fields!')
+            toast.error('Fill out all the fields!')
             return null;
         }
 
@@ -87,11 +90,11 @@ function SingleVehicleAsset() {
 
         axios.post('http://localhost:5000/api/v1/assets', data, {auth}).then(res => {
             console.log(res.data)
-            alert(res.data.message)
+            toast.dark(res.data.message)
             // setNewAsset(res.data.result)
         }).catch(err => {
             console.log(err.response)
-            alert(err.response.data.message)
+            toast.error(err.response.data.message)
         })
     }
 
@@ -116,6 +119,7 @@ function SingleVehicleAsset() {
 
     return (
         <>
+        <ToastContainer />
         <Typography variant="h5"
             style={
                 {margin: '30px 0'}

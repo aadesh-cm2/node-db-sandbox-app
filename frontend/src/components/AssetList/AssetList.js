@@ -51,10 +51,6 @@ function AssetList(newAsset) {
         },
     }));
 
-    const handleChange = (newValue) => {
-        setMake(newValue)
-    };
-
     const classes = useStyles();
 
     return (
@@ -63,10 +59,10 @@ function AssetList(newAsset) {
 
             <AppBar position="static">
                 <Tabs value={0}>
-                    <Tab label="Chevrolet" onClick={() => handleChange('Chevrolet')} />
-                    <Tab label="Buick" onClick={() => handleChange('Buick')} />
-                    <Tab label="GMC" onClick={() => handleChange('GMC')} />
-                    <Tab label="Cadillac" onClick={() => handleChange('Cadillac')} />
+                    <Tab label="Chevrolet" onClick={() => setMake('Chevrolet')} />
+                    <Tab label="Buick" onClick={() => setMake('Buick')} />
+                    <Tab label="GMC" onClick={() => setMake('GMC')} />
+                    <Tab label="Cadillac" onClick={() => setMake('Cadillac')} />
                 </Tabs>
             </AppBar>
 

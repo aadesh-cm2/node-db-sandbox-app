@@ -1,47 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import { Divider, Drawer, List, ListItem, ListItemText } from '@material-ui/core';
+import {
+    Divider,
+    Drawer,
+    List,
+    ListItem,
+    ListItemText
+} from '@material-ui/core';
+import {Link} from 'react-router-dom';
+
 
 function TopNav() {
 
     const [sidenav, setSidenav] = useState(false)
 
-    return (<>
-        <AppBar position="static">
-            <Toolbar>
-                <IconButton edge="start" color="inherit" aria-label="menu"
-                    onClick={
-                        () => setSidenav(true)
-                    }>
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant="h6">
-                    CM2 Asset Manager
-                </Typography>
-            </Toolbar>
-            <Drawer open={sidenav}
-                onClose={
+    const ListItemLink = (props) => {
+        return (
+            <ListItem button
+                onClick={
                     () => setSidenav(false)
+            }
+                divider
+            >
+
+                <Link to={
+                    props.to
                 }>
-                <List>
-                    <ListItem>
-                        Vehicles
-                    </ListItem>
-                    <Divider />
-                    <ListItem button>
-                        Upload Vehicle Assets
-                    </ListItem>
-                    <ListItem button>
-                        Vehicle List
-                    </ListItem>
-                </List>
-            </Drawer>
-        </AppBar>
-    </>)
+                    {
+                    props.text
+                } </Link>
+            </ListItem>
+        );
+    }
+
+
+    return (
+        <>
+            <AppBar position="static">
+                <Toolbar>
+                    <IconButton edge="start" color="inherit" aria-label="menu"
+                        onClick={
+                            () => setSidenav(true)
+                    }>
+                        <MenuIcon/>
+                    </IconButton>
+                    <Typography variant="h6">
+                        CM2 Asset Manager
+                    </Typography>
+                </Toolbar>
+                <Drawer open={sidenav}
+                    onClose={
+                        () => setSidenav(false)
+                }>
+                    <List>
+                        <ListItem>
+                            Vehicles
+                        </ListItem>
+                        <Divider/>
+                        <ListItemLink to="/" text="Upload Vehicle Assets"/>
+                        <ListItemLink to="/vehicle" text="Vehicle List"/>
+                    </List>
+                </Drawer>
+            </AppBar>
+        </>
+    )
 }
 export default TopNav;

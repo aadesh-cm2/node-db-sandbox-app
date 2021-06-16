@@ -24,7 +24,7 @@ const saveAsset = (newAsset, file) => {
             status: true,
             primary: newAsset.primaryAsset == 'true',
             metaData: {
-                makeCD : newAsset.makeCD,
+                makeCD : Number(newAsset.makeCD),
                 modelCD : newAsset.modelCD,
                 modelYear : newAsset.modelYear,
                 modelTypeEN : newAsset.modelTypeEN,

@@ -1,0 +1,21 @@
+.MuiPaper-rounded{
+    padding: 10px;
+}
+.MuiCard-root img {
+    width: 250px;
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
+}
+@media screen and (max-width: 1024px){
+    .MuiCard-root img {
+        width: 200px;
+    }
+
+}
+@media screen and (max-width: 768px){
+    .MuiCard-root img {
+        width: 100px;
+    }
+
+}

@@ -12,7 +12,7 @@ const size = {
 }
 
 const metaData = {
-    makeCD : String,
+    makeCD : Number,
     modelCD : String,
     modelYear : String,
     modelTypeEN : String,
