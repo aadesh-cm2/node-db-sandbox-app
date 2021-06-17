@@ -6,6 +6,7 @@ import Container from '@material-ui/core/Container';
 import TopNav from './components/TopNav/TopNav';
 import UploadVehicleAsset from './pages/UploadVehicleAsset/UploadVehicleAsset';
 import VehicleList from './pages/VehicleList/VehicleList';
+import EditVehicleAsset from './pages/EditVehicleAsset/EditVehicleAsset';
 
 function App() {
 
@@ -17,8 +18,10 @@ function App() {
                 <Switch>
                     <Route exact path='/'
                         component={UploadVehicleAsset} />
-                    <Route path='/vehicle'
+                    <Route path='/vehicles'
                         component={VehicleList} />
+                    <Route path='/vehicle/edit/:id'
+                        component={EditVehicleAsset} />
                 </Switch>
             </Container>
         </Router>
