@@ -10,9 +10,12 @@ import {
     ListItemText,
     Typography,
     Chip,
-    Box
+    Box,
+    ListItemSecondaryAction,
+    IconButton 
 } from '@material-ui/core';
 import {Skeleton} from '@material-ui/lab';
+import EditIcon from '@material-ui/icons/Edit';
 
 import auth from '../../auth/auth';
 
@@ -121,46 +124,61 @@ const VehicleList = () => {
                                                 }/>
                                         </ListItemAvatar>
                                         <ListItemText>
-                                            <Typography variant="h5">
-                                                {
-                                                vehicle.assetName.assetNameEN
-                                            } </Typography>
-                                            <Typography variant="h6">
-                                                {
-                                                vehicle.metaData.modelYear
-                                            } {
-                                                vehicle.model
-                                            } </Typography>
-                                            <Box>
-                                                <Chip label={
-                                                        vehicle.metaData.modelTypeEN
-                                                    }
-                                                    variant="outlined"/> {
-                                                vehicle.metaData.modelSubTypeEN ? <Chip label={
-                                                        vehicle.metaData.modelSubTypeEN
-                                                    }
-                                                    variant="outlined"
-                                                    style={
-                                                        {marginLeft: 10}
-                                                    }/> : null
-                                            } </Box>
-                                            <Box style={
-                                                {marginTop: 20}
-                                            }>
-                                                Color:
-                                                <span style={
-                                                    {
-                                                        width: 20,
-                                                        height: 20,
-                                                        marginLeft: 10,
-                                                        marginBottom: -3,
-                                                        backgroundColor: vehicle.metaData.color,
-                                                        display: 'inline-block'
-                                                    }
-                                                }></span>
-                                            </Box>
+                                            <Grid container >
+                                                <Grid item>
+                                                    <Typography variant="h5">
+                                                        {
+                                                        vehicle.assetName.assetNameEN
+                                                    } </Typography>
+                                                    <Typography variant="h6">
+                                                        {
+                                                        vehicle.metaData.modelYear
+                                                    } {
+                                                        vehicle.model
+                                                    } </Typography>
+                                                </Grid>
+                                                <Grid item>
+                                                    <Box>
+                                                        <Chip label={
+                                                                vehicle.metaData.modelTypeEN
+                                                            }
+                                                            variant="outlined"/> {
+                                                        vehicle.metaData.modelSubTypeEN ? <Chip label={
+                                                                vehicle.metaData.modelSubTypeEN
+                                                            }
+                                                            variant="outlined"
+                                                            style={
+                                                                {marginLeft: 10}
+                                                            }/> : null
+                                                    } </Box>
+
+                                                </Grid>
+                                                <Grid item>
+                                                    <Box style={
+                                                        {marginTop: 20}
+                                                    }>
+                                                        Color:
+                                                        <span style={
+                                                            {
+                                                                width: 20,
+                                                                height: 20,
+                                                                marginLeft: 10,
+                                                                marginBottom: -3,
+                                                                backgroundColor: vehicle.metaData.color,
+                                                                display: 'inline-block'
+                                                            }
+                                                        }></span>
+                                                    </Box>
+
+                                                </Grid>
+                                            </Grid>
 
                                         </ListItemText>
+                                        <ListItemSecondaryAction>
+                                            <IconButton >
+                                                <EditIcon />
+                                            </IconButton>
+                                        </ListItemSecondaryAction>
                                     </ListItem>
                                 </Paper>
                             </Grid>
