@@ -7,8 +7,16 @@
     margin: 0 auto;
     cursor: pointer;
 }
+.MuiDivider-root{
+    margin: 10px 0 !important;
+}
 li {
     list-style: none;
+}
+.grid-image img{
+    max-width: 100%;
+    display: block;
+    margin: 0 auto 10px;
 }
 @media screen and (max-width: 1024px){
     .MuiCard-root img {

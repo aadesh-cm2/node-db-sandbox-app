@@ -100,17 +100,34 @@ router.post('/multiple', upload.array('files', 10), (req, res) => {
 
 })
 
-router.post('/all', (req, res) => {
+router.post('/all', async (req, res) => {
 
-    const query = req.body;
+    const {query, config } = req.body;
+
+    if(!query || !config)
+        return res.status(400).json({
+            message : "Missing paramaters",
+            success : false
+        })
 
     console.log("Query:", query);
+    console.log("config:", config);
+
+    const totalAssets = await assets.countDocuments();
+
+    const skip = config.page * config.limit;
+
+    console.log(totalAssets);
 
     console.log(dotify(query));
 
-    assets.find(dotify(query)).exec().then(result => {
+    assets.find(dotify(query)).limit(config.limit ? config.limit : 50).skip(skip).exec().then(result => {
         console.log("Vehicles:::", result.length)
-        return res.status(200).json({data: result, success: true})
+        return res.status(200).json({data: result, success: true, pageData: {
+            total : totalAssets,
+            currentLimit : config.limit,
+            currentPage : config.page
+        }})
     }).catch(err => {
         console.error(err);
 
