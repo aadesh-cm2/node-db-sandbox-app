@@ -13,7 +13,7 @@ const EditVehicleAsset = () => {
     const [vehicleData, setVehicleData] = useState();
 
   let { id } = useParams();
-  console.log(id);
+  
   useEffect(() => {
     fetchData(id);
   }, []);

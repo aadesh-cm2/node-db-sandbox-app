@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/aadesh-cm2/node-db-sandbox-app#readme",
   "dependencies": {
+    "adm-zip": "^0.5.5",
     "body-parser": "^1.19.0",
     "buffer-image-size": "^0.6.4",
     "colorthief": "^2.3.2",

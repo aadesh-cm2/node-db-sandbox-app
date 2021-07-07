@@ -47,6 +47,20 @@ const saveAsset = (newAsset, file) => {
     })
 }
 
+const getTotalAssets = async () => {
+
+    const totalAssets = await assets.countDocuments();
+    return totalAssets;
+}
+
+const getFilterAssets = async filter => {
+
+    const filterCount = await assets.find(filter).countDocuments()
+    return filterCount;
+}
+
 module.exports = {
     saveAsset,
+    getTotalAssets,
+    getFilterAssets
   };

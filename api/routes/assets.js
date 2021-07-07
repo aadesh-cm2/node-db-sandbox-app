@@ -2,8 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
 var dotify = require('node-dotify');
+var AdmZip = require('adm-zip');
 
-const {saveAsset} = require("../controllers/assets");
+const {saveAsset, getTotalAssets, getFilterAssets} = require("../controllers/assets");
 
 const assets = require("../models/assets");
 
@@ -11,14 +12,23 @@ const router = express.Router();
 
 const upload = multer({storage: multer.memoryStorage()});
 
+var bulkStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        console.log(file)
+        cb(null, 'Upload.zip');
+    }
+});
+
+var bulkUpload = multer({ storage: bulkStorage }).any();
 
 router.post('/', upload.single("file"), async (req, res) => {
 
     if (!req.body || !req.body.assetNameEN || !req.body.assetNameFR || !req.body.make || !req.body.model) 
         return res.status(500).json({message: "Missing Asset data", success: false});
     
-
-
     const newAsset = req.body;
 
     console.log(newAsset);
@@ -27,7 +37,6 @@ router.post('/', upload.single("file"), async (req, res) => {
     if (!req.file) 
         return res.status(400).send("Missing image file");
     
-
     try {
         if (newAsset.primaryAsset == 'true') {
             assets.findOne({make: newAsset.make, model: newAsset.model, primary: true, "metaData.modelYear": newAsset.modelYear}).then(async existingPrimaryAsset => {
@@ -70,10 +79,6 @@ router.post('/multiple', upload.array('files', 10), (req, res) => {
      else if (!req.files.length) 
         return res.status(400).json({message: 'Missing Images', success: false})
 
-
-    
-
-
     const assets = req.body.assets;
 
     const uploadedAssets = []
@@ -94,15 +99,49 @@ router.post('/multiple', upload.array('files', 10), (req, res) => {
      else 
         return res.status(500).json({message: "Something went wrong", success: false})
 
+})
 
+router.post('/bulk', upload.array('files', 10), async (req, res) => {
+
+    if (!req.body || !req.body.assetNameEN || !req.body.assetNameFR || !req.body.make || !req.body.model) 
+        return res.status(500).json({message: "Missing Asset data", success: false});
+
+    const newAsset = req.body,
+            files = req.files;
+
+    if (!req.files) 
+        return res.status(400).send("Missing image file");
     
+    try{
+        let assetSaved = []
+        files.map(async file => {
+            assetSaved.push(await saveAsset(newAsset, file))
+        })
+        Promise.resolve(assetSaved)
+        .then(result => {
 
+            console.log("Reolved promises:::",result)
+            return res.status(200).json({
+                message : "Bulk upload complete!",
+                success : true
+            })
+        })
+        .catch(err => {
+            console.log(err)
+            return res.status(500).json({message: 'Something went wrong', success: false})
+        })
 
+    }
+    catch(error){
+        console.error(error);
+        return res.status(500).json({message: "Something went wrong", success: false})
+
+    }
 })
 
 router.post('/all', async (req, res) => {
 
-    const {query, config } = req.body;
+    let {query, config, sort } = req.body;
 
     if(!query || !config)
         return res.status(400).json({
@@ -113,25 +152,65 @@ router.post('/all', async (req, res) => {
     console.log("Query:", query);
     console.log("config:", config);
 
-    const totalAssets = await assets.countDocuments();
+    query = await dotify(query)
+
+    if(query.model)
+        query.model = new RegExp('^'+query.model, "i")
+    console.log("Dotify Query::",query)
+
+    if(!sort)
+        sort = {
+            _id : 'asc'
+        }
+
+    console.log("sort:", sort);
 
     const skip = config.page * config.limit;
 
-    console.log(totalAssets);
+    const totalAssets = await getTotalAssets();
+    const filterCount = await getFilterAssets(query);
 
-    console.log(dotify(query));
+    console.log("Filter count:::",filterCount)
 
-    assets.find(dotify(query)).limit(config.limit ? config.limit : 50).skip(skip).exec().then(result => {
-        console.log("Vehicles:::", result.length)
+    assets.find(query).limit(config.limit ? config.limit : 50).skip(skip).sort(dotify(sort)).exec().then(result => {
+        
+        const currentCount = result.length
+        const pageCount = currentCount ===0 ? 0 : Math.ceil(filterCount/config.limit)
+
+        if(!result || !result.length)
+            return res.status(200).json({
+                data: result,
+                success : false,
+                message : "No assets found",
+                pageData: {
+                    total : totalAssets,
+                    currentLimit : config.limit,
+                    currentPage : config.page,
+                    pageCount
+                }
+            })
+
+
         return res.status(200).json({data: result, success: true, pageData: {
             total : totalAssets,
             currentLimit : config.limit,
-            currentPage : config.page
+            currentPage : config.page,
+            pageCount
         }})
     }).catch(err => {
         console.error(err);
 
     })
+})
+
+router.get('/search',(req, res) => {
+
+    let { key } = req.query;
+
+    key = new RegExp('^'+key, "i")
+
+    
+    
 })
 
 router.put('/vehicle/:id', (req, res) => {
