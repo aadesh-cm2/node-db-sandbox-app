@@ -1,22 +1,32 @@
 var admin = require("firebase-admin");
 require("dotenv").config();
 var serviceAccount = require("./firebase-config.json");
+const {Storage} = require('@google-cloud/storage');
 
+const bucketName = process.env.BUCKET_URL
+
+const initialize = () => {
+//initialize a new bucket if the bucket does not exist
+if (admin.apps.length === 0) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: bucketName,
+  });
+}
+}
 
 const saveImage = (file) => {
 
 return new Promise((resolve, reject) => {
-  if (admin.apps.length === 0) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      storageBucket: process.env.BUCKET_URL,
-    });
-  }
   
+  initialize();
+  
+  //use that bucket to store files
   const bucket = admin.storage().bucket();
   
   const blob = bucket.file(file.originalname);
   
+  //upload file using blob
   const blobWriter = blob.createWriteStream({
       metadata: {
           contentType: file.mimetype
@@ -27,6 +37,7 @@ return new Promise((resolve, reject) => {
 
   blobWriter.end(file.buffer);
 
+  //return back uploaded file URL to be saved onto DB
   blobWriter.on("finish", () => {
       console.log("File Uploaded")
       fileURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${blob.name}?alt=media`
@@ -41,6 +52,27 @@ return new Promise((resolve, reject) => {
 });
   
 }
+
+const deleteImage = async fileName => {
+ 
+  return new Promise((resolve, reject) => {
+    try{
+      initialize()
+  
+      const bucket = admin.storage().bucket();
+  
+      bucket.file(fileName).delete();
+      console.log(`gs://${bucketName}/${fileName} deleted`);
+      resolve(true);
+    }
+    catch(err){
+      console.error(err)
+      reject(err)
+    }
+
+  });
+}
 module.exports = {
   saveImage,
+  deleteImage
 };

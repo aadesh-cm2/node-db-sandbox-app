@@ -18,6 +18,17 @@ li {
     display: block;
     margin: 0 auto 10px;
 }
+.info-img{
+    display: block;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+}
+.multiple-checkbox{
+    cursor: pointer;
+    transform: scale(1.5);
+    margin-right: 20px;
+}
 @media screen and (max-width: 1024px){
     .MuiCard-root img {
         width: 200px;

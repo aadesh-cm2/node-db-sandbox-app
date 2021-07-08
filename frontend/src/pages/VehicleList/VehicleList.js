@@ -28,8 +28,8 @@ import {
     InputAdornment,
     Fab
 } from "@material-ui/core";
-
 import {Skeleton, Pagination} from "@material-ui/lab";
+import { AllCheckerCheckbox, Checkbox, CheckboxGroup } from '@createnl/grouped-checkboxes';
 
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -40,6 +40,7 @@ import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SearchIcon from '@material-ui/icons/Search';
 import AddIcon from '@material-ui/icons/Add';
+import CancelIcon from '@material-ui/icons/Cancel';
 
 import {Link} from "react-router-dom";
 
@@ -55,7 +56,10 @@ const VehicleList = () => {
     const [confirm, setConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState("");
     const [gridView, setGridView] = useState(false);
-    const [openInfoDrawer, setOpenInfoDrawer] = useState(false);
+    const [openInfoDrawer, setOpenInfoDrawer] = useState({
+        open: false,
+        vehicle : {}
+    });
 
     useEffect(() => {
         fetchData({
@@ -144,6 +148,10 @@ const VehicleList = () => {
         }, 0)
     }
 
+    const handleMultipleChecks = checkboxes => {
+        console.log(checkboxes)
+    }
+
     const deleteAsset = () => {
         if (deleteId !== "") 
             axios.delete("http://localhost:5000/api/v1/assets/vehicle/" + deleteId, {auth}).then((result) => {
@@ -165,9 +173,14 @@ const VehicleList = () => {
     };
 
     const assetInfo = vehicle => {
+        if(vehicle && Object.keys(vehicle).length !== 0)
         return (
             <>
                 <Box p={2}>
+                <IconButton onClick={()=>setOpenInfoDrawer({vehicle:{},open:false})} style={{float:'right'}}>
+                    <CancelIcon />
+                </IconButton>
+                    <img src={vehicle.imageURL} alt={vehicle.model} className="info-img" />
                     <List>
                         <ListItem>
                             <ListItemText primary={
@@ -182,7 +195,7 @@ const VehicleList = () => {
                                     "/vehicle/edit/" + vehicle._id
                                 }>
                                     <IconButton>
-                                        <EditIcon/>
+                                        <EditIcon color="action"/>
                                     </IconButton>
                                 </Link>
                                 <IconButton onClick={
@@ -191,7 +204,7 @@ const VehicleList = () => {
                                         setDeleteId(vehicle._id);
                                     }
                                 }>
-                                    <DeleteIcon/>
+                                    <DeleteIcon color="secondary"/>
                                 </IconButton>
                             </ListItemSecondaryAction>
                         </ListItem>
@@ -309,7 +322,7 @@ const VehicleList = () => {
                                 width: '100%',
                             }
                         }>
-                            <InputLabel id="filter-year">Filter by Year</InputLabel>
+                            <InputLabel id="filter-year" style={{left: 10}}>Filter by Year</InputLabel>
                             <Select labelId="filter-year" displayEmpty fullWidth variant="outlined">
                                 <MenuItem value='2019'>2019</MenuItem>
                                 <MenuItem value='2020'>2020</MenuItem>
@@ -326,7 +339,7 @@ const VehicleList = () => {
                                 width: '100%'
                             }
                         }>
-                            <InputLabel id="sort-assets">Sort</InputLabel>
+                            <InputLabel id="sort-assets" style={{left: 10}}>Sort</InputLabel>
                             <Select labelId="sort-assets" displayEmpty fullWidth variant="outlined">
                                 <MenuItem value='models-asc'>Models A-Z</MenuItem>
                                 <MenuItem value='models-dsc'>Models Z-A</MenuItem>
@@ -348,24 +361,29 @@ const VehicleList = () => {
             </Box>
             <Grid container
                 spacing={4}
+                justify="center"
                 direction={
                     gridView ? "row" : "column"
             }>
                 {
                 vehicles ? (
-                    <> {
+                    <CheckboxGroup onChange={handleMultipleChecks}> {
                         vehicles.data.map((vehicle, index) => {
                             if (make === Number(vehicle.metaData.makeCD)) 
                                 return (
                                     <Grid item
                                         key={index}
                                         sm={
-                                            gridView ? "4" : "12"
+                                            gridView ? "6" : "12"
+                                    }
+                                    md={
+                                        gridView ? "4" : "12"
                                     }>
                                         <Paper elevation={2}>
                                             {
                                             !gridView ? (
                                                 <ListItem>
+                                                    <Checkbox value={vehicle._id} className="multiple-checkbox" />
                                                     <ListItemAvatar>
                                                         <Avatar src={
                                                                 vehicle.imageURL
@@ -380,7 +398,9 @@ const VehicleList = () => {
                                                                     border: "1px solid #eee",
                                                                     marginRight: 30
                                                                 }
-                                                            }/>
+                                                            }
+                                                            variant="rounded"
+                                                            />
                                                     </ListItemAvatar>
                                                     <ListItemText>
                                                         <Grid container direction="row" alignItems="center" alignContent="center"
@@ -465,7 +485,7 @@ const VehicleList = () => {
                                                                 setDeleteId(vehicle._id);
                                                             }
                                                         }>
-                                                            <DeleteIcon/>
+                                                            <DeleteIcon color="secondary"/>
                                                         </IconButton>
                                                     </ListItemSecondaryAction>
                                                 </ListItem>
@@ -478,15 +498,15 @@ const VehicleList = () => {
                                                             alt={
                                                                 vehicle.assetName.assetNameEN
                                                             }/>
-                                                        <Box style={
-                                                            {overflow: "hidden"}
-                                                        }>
+                                                        <Grid container justify="space-between" alignItems="center">
+                                                            <Grid item>
+                                                                <Checkbox value={vehicle._id} className="multiple-checkbox" />
                                                             {
                                                             vehicle.assetName.assetNameEN
                                                         }
-                                                            <span style={
-                                                                {float: "right"}
-                                                            }>
+
+                                                            </Grid>
+                                                            <Grid item>
                                                                 {
                                                                 vehicle.primary ? (
                                                                     <IconButton onClick={
@@ -500,20 +520,31 @@ const VehicleList = () => {
                                                                 ) : null
                                                             }
                                                                 <IconButton onClick={
-                                                                    () => setOpenInfoDrawer(true)
+                                                                    () => setOpenInfoDrawer({
+                                                                        open: true,
+                                                                        vehicle
+                                                                    })
                                                                 }>
                                                                     <InfoIcon/>
                                                                 </IconButton>
-                                                            </span>
-                                                        </Box>
+
+                                                            </Grid>
+                                                            {/* <span style={
+                                                                {float: "right"}
+                                                            }>
+                                                            </span> */}
+                                                        </Grid>
                                                     </>
                                                     <Drawer anchor="bottom"
-                                                        open={openInfoDrawer}
+                                                        open={openInfoDrawer.open}
                                                         onClose={
-                                                            () => setOpenInfoDrawer(false)
+                                                            () => setOpenInfoDrawer({
+                                                                vehicle: {},
+                                                                open: false
+                                                            })
                                                     }>
                                                         {
-                                                        assetInfo(vehicle)
+                                                        assetInfo(openInfoDrawer.vehicle)
                                                     } </Drawer>
                                                 </Box>
                                             )
@@ -529,7 +560,7 @@ const VehicleList = () => {
                                 }
                                 onChange={changePage}/>
                         </Grid>
-                    </>
+                    </CheckboxGroup>
                 ) : (
                     <Grid item>
                         <Paper>

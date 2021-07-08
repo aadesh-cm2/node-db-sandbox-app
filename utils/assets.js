@@ -1,7 +1,9 @@
 const getColors = require('get-image-colors')
 var Vibrant = require('node-vibrant')
 const sizeOf = require('image-size')
+require("dotenv").config();
 
+const vehicleMap = require('../api/data/vehicle_mapping')
 const sizeChart = require('./sizeChart.json');
 
 const resolveMetaData = (make, image) => {
@@ -64,7 +66,21 @@ const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
     return hex.length === 1 ? '0' + hex : hex
   }).join('')
 
+const decapsulateImageName = name => {
+    name = name.replace(`https://firebasestorage.googleapis.com/v0/b/${process.env.BUCKET_URL}/o/`,'')
+    name = name.replace('?alt=media','');
+    return name;
+}
+
+const filterVehicle = (asset) => {
+    console.log("Asset to be filtered::", asset);
+    const filteredVehicle = vehicleMap.filter(vehicle => asset.make === vehicle.make && asset.model === vehicle.model && Number(asset.metaData.modelYear) === vehicle.modelYear)
+    return filteredVehicle[0]
+}
+
 module.exports = {
     resolveMetaData,
-    resolveImageSize
+    resolveImageSize,
+    decapsulateImageName,
+    filterVehicle
 }

@@ -4,9 +4,11 @@ const multer = require("multer");
 var dotify = require('node-dotify');
 var AdmZip = require('adm-zip');
 
-const {saveAsset, getTotalAssets, getFilterAssets} = require("../controllers/assets");
+const {saveAsset, getTotalAssets, getFilterAssets, updateAsset} = require("../controllers/assets");
 
 const assets = require("../models/assets");
+const {deleteImage, saveImage} = require("../../utils/firebase-functions");
+const { decapsulateImageName } = require("../../utils/assets");
 
 const router = express.Router();
 
@@ -22,7 +24,7 @@ var bulkStorage = multer.diskStorage({
     }
 });
 
-var bulkUpload = multer({ storage: bulkStorage }).any();
+var bulkUpload = multer({storage: bulkStorage}).any();
 
 router.post('/', upload.single("file"), async (req, res) => {
 
@@ -105,34 +107,28 @@ router.post('/bulk', upload.array('files', 10), async (req, res) => {
 
     if (!req.body || !req.body.assetNameEN || !req.body.assetNameFR || !req.body.make || !req.body.model) 
         return res.status(500).json({message: "Missing Asset data", success: false});
-
+    
     const newAsset = req.body,
-            files = req.files;
+        files = req.files;
 
     if (!req.files) 
         return res.status(400).send("Missing image file");
     
-    try{
+    try {
         let assetSaved = []
         files.map(async file => {
             assetSaved.push(await saveAsset(newAsset, file))
         })
-        Promise.resolve(assetSaved)
-        .then(result => {
+        Promise.resolve(assetSaved).then(result => {
 
-            console.log("Reolved promises:::",result)
-            return res.status(200).json({
-                message : "Bulk upload complete!",
-                success : true
-            })
-        })
-        .catch(err => {
+            console.log("Reolved promises:::", result)
+            return res.status(200).json({message: "Bulk upload complete!", success: true})
+        }).catch(err => {
             console.log(err)
             return res.status(500).json({message: 'Something went wrong', success: false})
         })
 
-    }
-    catch(error){
+    } catch (error) {
         console.error(error);
         return res.status(500).json({message: "Something went wrong", success: false})
 
@@ -141,26 +137,25 @@ router.post('/bulk', upload.array('files', 10), async (req, res) => {
 
 router.post('/all', async (req, res) => {
 
-    let {query, config, sort } = req.body;
+    let {query, config, sort} = req.body;
 
-    if(!query || !config)
-        return res.status(400).json({
-            message : "Missing paramaters",
-            success : false
-        })
+    if (!query || !config) 
+        return res.status(400).json({message: "Missing paramaters", success: false})
 
+    query.status = true;
     console.log("Query:", query);
     console.log("config:", config);
 
     query = await dotify(query)
 
-    if(query.model)
-        query.model = new RegExp('^'+query.model, "i")
-    console.log("Dotify Query::",query)
+    if (query.model) 
+        query.model = new RegExp('^' + query.model, "i")
+    
+    console.log("Dotify Query::", query)
 
-    if(!sort)
+    if (!sort) 
         sort = {
-            _id : 'asc'
+            _id: 'asc'
         }
 
     console.log("sort:", sort);
@@ -170,71 +165,91 @@ router.post('/all', async (req, res) => {
     const totalAssets = await getTotalAssets();
     const filterCount = await getFilterAssets(query);
 
-    console.log("Filter count:::",filterCount)
+    console.log("Filter count:::", filterCount)
 
     assets.find(query).limit(config.limit ? config.limit : 50).skip(skip).sort(dotify(sort)).exec().then(result => {
-        
-        const currentCount = result.length
-        const pageCount = currentCount ===0 ? 0 : Math.ceil(filterCount/config.limit)
 
-        if(!result || !result.length)
+        const currentCount = result.length
+        const pageCount = currentCount === 0 ? 0 : Math.ceil(filterCount / config.limit)
+
+        if (!result || !result.length) 
             return res.status(200).json({
                 data: result,
-                success : false,
-                message : "No assets found",
+                success: false,
+                message: "No assets found",
                 pageData: {
-                    total : totalAssets,
-                    currentLimit : config.limit,
-                    currentPage : config.page,
+                    total: totalAssets,
+                    currentLimit: config.limit,
+                    currentPage: config.page,
                     pageCount
                 }
             })
 
-
-        return res.status(200).json({data: result, success: true, pageData: {
-            total : totalAssets,
-            currentLimit : config.limit,
-            currentPage : config.page,
-            pageCount
-        }})
+        return res.status(200).json({
+            data: result,
+            success: true,
+            pageData: {
+                total: totalAssets,
+                currentLimit: config.limit,
+                currentPage: config.page,
+                pageCount
+            }
+        })
     }).catch(err => {
         console.error(err);
 
     })
 })
 
-router.get('/search',(req, res) => {
+router.get('/search', (req, res) => {
 
-    let { key } = req.query;
+    let {key} = req.query;
 
-    key = new RegExp('^'+key, "i")
+    key = new RegExp('^' + key, "i")
 
-    
-    
+
 })
 
-router.put('/vehicle/:id', (req, res) => {
+router.put('/vehicle/:id', upload.single("file"), async (req, res) => {
+        const {id} = req.params;
+        let {asset} = req.body;
+        const {file} = req;
 
-    const id = req.params.id;
-    const {asset} = req.body;
-    assets.findByIdAndUpdate(id, asset).then(result => {
-        if (result) 
-            return res.status(200).json({data: result, message: "Asset updated!", success: true})
-         else 
-            notFoundError(res);
+        console.log("Asset Str::",asset)
+
+        if(!id || !asset)
+            return res.status(400).json({
+                message : "Missing body params",
+                success : false
+            })
         
-    })
-    .catch(err => {
-        console.log(err)
-        internalError(res);
-    })
+        if(typeof asset === 'string')
+            asset = JSON.parse(asset)
+
+        console.log("Asset obj::",asset)
+        
+        updateAsset(asset,id,file).then(result => {
+            console.log(result);
+            return res.status(200).json({
+                message : "Asset updated",
+                success : true,
+                result
+            })
+        })
+        .catch(err => {
+            console.error(err)
+            internalError(res);
+        })
 });
 
 router.delete('/vehicle/:id', (req, res) => {
 
     const id = req.params.id;
 
-    assets.findByIdAndDelete(id).then(result => {
+    const asset = {
+        status: false
+    }
+    assets.findByIdAndUpdate(id, asset).then(result => {
 
         if (result) 
             return res.status(200).json({message: "Asset Deleted!", success: true})
@@ -247,9 +262,20 @@ router.delete('/vehicle/:id', (req, res) => {
     })
 });
 
+router.delete('/image/:name', (req, res) => {
+    try {
+        const {name} = req.params
+        deleteImage(name)
+        return res.status(200).json({message: 'Image deleted!', success: true})
+    } catch (err) {
+        console.error(err);
+        internalError(res)
+    }
+})
+
 router.get('/vehicle/:id', (req, res) => {
 
-    const id = req.params.id
+    const {id} = req.params;
 
     assets.findById(id).exec().then(result => {
         if (result !== null || result) 
@@ -257,6 +283,7 @@ router.get('/vehicle/:id', (req, res) => {
          else 
             notFoundError(res);
         
+
     }).catch(err => {
         console.error(err);
         internalError(res)

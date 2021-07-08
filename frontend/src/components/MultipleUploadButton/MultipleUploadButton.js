@@ -51,7 +51,7 @@ export default function MultipleUploadButton(props) {
 
     return (
         <>
-            <Button variant="contained" color="secondary" component="label">
+            <Button variant="contained" color="primary" component="label">
                 <input type="file"
                     onChange={handleFiles}
                     required
@@ -60,7 +60,7 @@ export default function MultipleUploadButton(props) {
                 Select Images
             </Button>
             {
-            props.images && props.images.length ? <Button variant="contained" style={{marginLeft:"5px", backgroundColor:"grey",color:"#fff"}} onClick={
+            props.images && props.images.length ? <Button variant="contained" color="secondary" style={{marginLeft:"5px"}} onClick={
                 () => {
                     props.setFiles([]);
                     props.setFileBlobs([])

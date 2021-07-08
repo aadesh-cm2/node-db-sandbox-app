@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { resolveMetaData, resolveImageSize } = require("../../utils/assets");
+const { resolveMetaData, resolveImageSize, filterVehicle, decapsulateImageName } = require("../../utils/assets");
 
 const {saveImage} = require("../../utils/firebase-functions");
 
@@ -47,6 +47,52 @@ const saveAsset = (newAsset, file) => {
     })
 }
 
+const updateAsset = async (asset, id, file) => {
+    return new Promise(async (resolve, reject) => {
+        try{
+        if(file){
+            let {originalImage} = asset
+            originalImage = decapsulateImageName(originalImage)
+    
+            await deleteImage(originalImage);
+            asset.imageURL = await saveImage(file)
+        }
+    
+        let filteredVehicle = filterVehicle(asset)
+
+        console.log("filteredVehicle",filteredVehicle)
+    
+        let metaData = {
+            makeCD : filteredVehicle.makeCD,
+            modelCD : filteredVehicle.modelCD,
+            modelYear : asset.modelYear,
+            modelTypeEN : filteredVehicle.modelTypeEN,
+            modelTypeFR : filteredVehicle.modelTypeFR,
+            modelSubTypeEN : filteredVehicle.modelSubTypeEN,
+            modelSubTypeFR : filteredVehicle.modelSubTypeFR,
+            color : asset.metaData.color,
+            expiryDate : asset.metaData.expiryDate,
+            size: file ? resolveImageSize(file.buffer) : asset.metaData.size
+        }
+    
+        asset.metaData = metaData
+        assets.findByIdAndUpdate(id, asset).then(result => {
+                    if (result)
+                        resolve(result)
+                    else
+                        reject(false)
+                })
+                .catch(err => {
+                    console.log(err)
+                    reject(err);
+                })
+            }
+            catch(err){
+                reject(err);
+            }
+    })
+}
+
 const getTotalAssets = async () => {
 
     const totalAssets = await assets.countDocuments();
@@ -62,5 +108,6 @@ const getFilterAssets = async filter => {
 module.exports = {
     saveAsset,
     getTotalAssets,
-    getFilterAssets
+    getFilterAssets,
+    updateAsset
   };

@@ -2,6 +2,8 @@ import React from 'react';
 
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Container from '@material-ui/core/Container';
+import { createMuiTheme } from '@material-ui/core/styles';
+import { ThemeProvider } from '@material-ui/styles';
 
 import TopNav from './components/TopNav/TopNav';
 import UploadVehicleAsset from './pages/UploadVehicleAsset/UploadVehicleAsset';
@@ -12,7 +14,19 @@ import './App.css'
 function App() {
 
 
+    const theme = createMuiTheme({
+        palette: {
+          primary: {
+            main: '#000',
+          },
+          secondary: {
+              main: '#be3633'
+          }
+        },
+      });
+
     return (<div className="App">
+    <ThemeProvider theme={theme}>
         <Router>
             <TopNav />
             <Container style={{margin:'30px auto'}}>
@@ -26,6 +40,7 @@ function App() {
                 </Switch>
             </Container>
         </Router>
+        </ThemeProvider>
     </div>);
 }
 

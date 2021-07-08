@@ -102,7 +102,7 @@ export default function BulkVehicleAsset() {
                     {
                     files && files.length ? (
                         <>
-                            <Grid item xs ={12} container>
+                            <Grid item xs ={12} container justify="center">
                                 {
                                 files.map((file, key) => {
                                     return (
