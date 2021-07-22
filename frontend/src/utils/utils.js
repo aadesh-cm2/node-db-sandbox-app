@@ -11,3 +11,20 @@ export const palletes = [
     "DarkVibrant",
     "DarkMuted"
 ]
+
+export function cleanObj(obj) {
+    console.log(obj)
+    for (var propName in obj) {
+      if (obj[propName] === '' || obj[propName] === undefined) {
+        delete obj[propName];
+      }
+      else if (typeof obj[propName] === "object"){
+        if(Object.keys(obj[propName]).length==0)
+            delete obj[propName]
+        else
+        cleanObj(obj[propName])
+
+      }
+    }
+    return obj
+  }
