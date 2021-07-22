@@ -65,7 +65,7 @@ const updateAsset = async (asset, id, file) => {
         let metaData = {
             makeCD : filteredVehicle.makeCD,
             modelCD : filteredVehicle.modelCD,
-            modelYear : asset.modelYear,
+            modelYear : asset.metaData.modelYear,
             modelTypeEN : filteredVehicle.modelTypeEN,
             modelTypeFR : filteredVehicle.modelTypeFR,
             modelSubTypeEN : filteredVehicle.modelSubTypeEN,
@@ -94,15 +94,25 @@ const updateAsset = async (asset, id, file) => {
 }
 
 const getTotalAssets = async () => {
-
-    const totalAssets = await assets.countDocuments();
-    return totalAssets;
+    try{
+        const totalAssets = await assets.countDocuments();
+        return totalAssets;
+    }
+    catch(err){
+        return null;
+    }
 }
 
 const getFilterAssets = async filter => {
+    try{
+        const filterCount = await assets.find(filter).countDocuments()
+        return filterCount;
 
-    const filterCount = await assets.find(filter).countDocuments()
-    return filterCount;
+    }
+    catch(err){
+        return null;
+    }
+
 }
 
 module.exports = {

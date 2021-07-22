@@ -3,7 +3,7 @@ var Vibrant = require('node-vibrant')
 const sizeOf = require('image-size')
 require("dotenv").config();
 
-const vehicleMap = require('../api/data/vehicle_mapping')
+const vehicleMap = require('../api/data/vehicle_mapping.json')
 const sizeChart = require('./sizeChart.json');
 
 const resolveMetaData = (make, image) => {
@@ -74,7 +74,8 @@ const decapsulateImageName = name => {
 
 const filterVehicle = (asset) => {
     console.log("Asset to be filtered::", asset);
-    const filteredVehicle = vehicleMap.filter(vehicle => asset.make === vehicle.make && asset.model === vehicle.model && Number(asset.metaData.modelYear) === vehicle.modelYear)
+    console.log("Vehicle mapping::",vehicleMap.length)
+    const filteredVehicle = vehicleMap.filter(vehicle => asset.make === vehicle.make && asset.model === vehicle.model)
     return filteredVehicle[0]
 }
 
