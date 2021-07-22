@@ -16,7 +16,8 @@ POST /api/v1/assets/
 To save Asset Data. Requires image file in req.file and asset data in req.body
 
 Sample body model:
-```{
+```
+{
     assetName : {
         assetNameEN : String,
         assetNameFR : String,
@@ -37,7 +38,8 @@ Sample body model:
         expiryDate : String,
     }
 
-}```
+}
+```
 
 POST /api/v1/assets/bulk
 
@@ -45,7 +47,8 @@ To save bulk Asset Data for a single vehicle type. Requires image files in req.f
 
 Sample body model:
 
-```{
+```
+{
     assetName : {
         assetNameEN : String,
         assetNameFR : String,
@@ -65,14 +68,16 @@ Sample body model:
         color : String,
         expiryDate : String,
     }
-}```
+}
+```
 
 POST /api/v1/assets/all
 
 Used to filter, sort and/or fetch all assets based on filters and pagination data. Requires body data for config.
 
 Sample body data: 
-```{
+```
+{
     query: {
         makeCD: 1,
     },
@@ -83,7 +88,8 @@ Sample body data:
     sort : {
         modelYear : 'asc'
     }
-}```
+}
+```
 
 PUT /api/v1/assets/vehicle/:id
 
@@ -102,7 +108,7 @@ Fetch a single asset with asset id in req.params
 ## Dependencies
 
 ### Backend
-
+```
 "express-basic-auth": "^1.2.0",
 "firebase": "^8.4.1",
 "firebase-admin": "^9.6.0",
@@ -110,9 +116,9 @@ Fetch a single asset with asset id in req.params
 "mongoose": "^5.12.5",
 "multer": "^1.4.2",
 "node-dotify": "^1.1.0",
-
+```
 ### Frontend
-
+```
 "@material-ui/core": "^4.11.3",
 "@material-ui/icons": "^4.11.2",
 "@material-ui/lab": "^4.0.0-alpha.57",
@@ -121,3 +127,4 @@ Fetch a single asset with asset id in req.params
 "node-vibrant": "^3.1.6",
 "react-router-dom": "^5.2.0",
 "react-toastify": "^7.0.4",
+```
